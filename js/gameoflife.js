@@ -15,13 +15,13 @@ function contains(cell) {
 
 // Build a string of the cell state (should be called buildCellString).
 const printCell = (cell, state) => {
-  contains.call(state, cell) ? "\u25A3" : "\u25A2";
+  return contains.call(state, cell) ? "\u25A3" : "\u25A2";
 };
 
 // Return an object containing the top right and bottom left corners of the state.
 const corners = (state = []) => {
   // If the state is empty, return the origin as the corners for the object.
-  if (state.Length === 0) {
+  if (state.length === 0) {
     // Return the origin as the corners for the object.
     return { topRight: [0, 0], bottomLeft: [0, 0] };
   }
@@ -84,7 +84,7 @@ const getLivingNeighbors = (cell, state) => {
   let neighborCells = getNeighborsOf(cell);
 
   // Return all living neighbor cells.
-  neighborCells.filter(neighborCell => contains.call(state, neighborCell));
+  return neighborCells.filter(neighborCell => contains.call(state, neighborCell));
 };
 
 // Determine if the cell will be alive or not in the next game state.
@@ -93,13 +93,16 @@ const willBeAlive = (cell, state) => {
   let livingNeighborCells = getLivingNeighbors(cell, state);
 
   // Return true if at least three living neighbor cells exist.
-  if (livingNeighborCells.Length >= 3) return true;
+  if (livingNeighborCells.length === 3) return true;
 
   // Resolve if the cell is alive.
   let cellIsAlive = contains.call(state, cell);
 
   // Return true if at least two living neighbor cells exist and the cell is alive.
-  if (livingNeighborCells.Length >= 2 && cellIsAlive) return true;
+  if (livingNeighborCells.length === 2 && cellIsAlive) return true;
+
+  // Otherwise return false.
+  return false;
 };
 
 // Build the next game state.
@@ -110,11 +113,18 @@ const calculateNext = (state) => {
   // Prepare the next game state.
   let nextGameState = [];
 
+  // Temporary variables.
+  let nextCellIsAlive;
+
   // Build the next game state from top to bottom.
-  for (let y = topRight[1]; y >= bottomLeft[1]; y--) {
+  for (let y = topRight[1] + 1; y >= bottomLeft[1] - 1; y--) {
     // Build the next game state row from left to right.
-    for (let x = bottomLeft[0]; x <= topRight[0]; x++) {
-      nextGameState.push(willBeAlive([x, y], state));
+    for (let x = bottomLeft[0] - 1; x <= topRight[0] + 1; x++) {
+      // Determine if the next cell will be alive.
+      nextCellIsAlive = willBeAlive([x, y], state);
+
+      // Add the next cell if it's alive.
+      if (nextCellIsAlive) nextGameState.push([x, y]);
     }
   }
 
@@ -149,7 +159,7 @@ const main = (pattern, iterations) => {
   const results = iterate(startPatterns[pattern], iterations);
 
   // Print each game state.
-  results.forEach(result => console.log(printCells(r)));
+  results.forEach(result => console.log(printCells(result)));
 };
 
 const startPatterns = {
